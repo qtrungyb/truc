@@ -378,8 +378,7 @@
 		<div class="tips">
           <span>Click 1 lần để gõ. Click lần 2 để xoay vòng (T ➔ C ➔ LE). Click chuột phải để xóa.</span>
 		</div>
-		<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%;">
-            <button onclick="loadFromCloud()" style="background-color: #64748b;">Tải dữ liệu Cloud</button>
+		<div style="display: flex; align-items: center; width: 100%; justify-content: flex-end;">
             <button onclick="addRow()">+ Thêm nhân sự</button>
         </div>
     </div>
@@ -495,13 +494,28 @@
     let activeDeptId = null;
     let isCloudLoading = false;
 
-	monthSelect.addEventListener('change', () => { 
+	let cloudLoadTimeout = null;
+
+    function scheduleCloudLoad() {
+        clearTimeout(cloudLoadTimeout);
+        cloudLoadTimeout = setTimeout(() => {
+            loadFromCloud(true);
+        }, 800); 
+    }
+
+    monthSelect.addEventListener('change', () => { 
         loadDataAndRender(); 
-        loadFromCloud(true);
+        scheduleCloudLoad();
     });
+    
     yearSelect.addEventListener('change', () => { 
         loadDataAndRender(); 
-        loadFromCloud(true);
+        scheduleCloudLoad();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        loadDataAndRender(); 
+        scheduleCloudLoad();
     });
 	
     function getCurrentDataKey() { return `timesheet_depts_${monthSelect.value}_${yearSelect.value}`; }
@@ -786,6 +800,9 @@
 
             if (data && data.status === "success" && data.departments && data.departments.length > 0) {
                 const monthYearKey = `${monthSelect.value}_${yearSelect.value}`;
+                
+                // Sao lưu trạng thái hiện tại dưới dạng chuỗi để so sánh sau
+                const currentStateStr = JSON.stringify(departments);
 
                 data.departments.forEach(cloudDept => {
                     let localDept = departments.find(d => d.name === cloudDept.name);
@@ -819,17 +836,23 @@
                     d.staffData.some(s => Object.keys(s.monthlyDays).length > 0)
                 );
 
-                if (departments.length > 0) activeDeptId = departments[0].id;
+                if (departments.length > 0) {
+                    let isCurrentDeptExists = departments.some(d => d.id === activeDeptId);
+                    if (!isCurrentDeptExists) activeDeptId = departments[0].id;
+                }
 
-                const stateToSave = { activeDeptId: activeDeptId, departments: departments };
-                localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
+                // Trạng thái sau khi ghép với dữ liệu Cloud
+                const newStateStr = JSON.stringify(departments);
 
-                renderTabs();
-                renderTable();
+                // TỐI ƯU QUAN TRỌNG: Chỉ lưu và vẽ lại bảng nếu dữ liệu thực sự có sự khác biệt
+                if (currentStateStr !== newStateStr) {
+                    const stateToSave = { activeDeptId: activeDeptId, departments: departments };
+                    localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
+                    renderTabs();
+                    renderTable();
+                }
                 
                 if (!isAuto) showToast("Tải đồng bộ thành công", "success", "✓");
-            } else {
-                if (!isAuto) showToast("Không có dữ liệu của tháng này trên Cloud", "warning", "⚠️");
             }
         } catch (error) {
             if (!isAuto) showToast("Lỗi kết nối Cloud!", "error", "❌");
