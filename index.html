@@ -763,45 +763,68 @@
             return;
         }
 
-        let activeDept = departments.find(d => d.id === activeDeptId);
-        if (!activeDept) return;
-
-        showToast("Đang tải dữ liệu từ Cloud...", "info", "🔄");
+        showToast("Đang quét và tải toàn bộ dữ liệu từ Cloud...", "info", "🔄");
 
         try {
-            // Tạo URL với các tham số truy vấn (query parameters)
             const url = new URL(GOOGLE_SHEET_API_URL);
-            url.searchParams.append("action", "load");
+            url.searchParams.append("action", "loadAll"); // Đổi action thành loadAll
             url.searchParams.append("month", monthSelect.value);
             url.searchParams.append("year", yearSelect.value);
-            url.searchParams.append("departmentName", activeDept.name);
 
             const response = await fetch(url, { method: 'GET' });
             const data = await response.json();
 
-            if (data && data.staffData) {
+            if (data && data.status === "success" && data.departments && data.departments.length > 0) {
                 const monthYearKey = `${monthSelect.value}_${yearSelect.value}`;
-                
-                // Cập nhật dữ liệu từ cloud vào bộ phận hiện tại
-                activeDept.staffData = data.staffData.map(staff => {
-                    let monthlyDays = {};
-                    monthlyDays[monthYearKey] = staff.days || {};
-                    return {
-                        name: staff.name,
-                        role: staff.role,
-                        monthlyDays: monthlyDays
-                    };
+
+                data.departments.forEach(cloudDept => {
+                    // Tìm xem bộ phận đã tồn tại ở máy này chưa
+                    let localDept = departments.find(d => d.name === cloudDept.name);
+
+                    if (!localDept) {
+                        localDept = {
+                            id: 'dept_' + Date.now() + Math.random().toString(36).substring(2),
+                            name: cloudDept.name,
+                            staffData: []
+                        };
+                        departments.push(localDept);
+                    }
+
+                    // Đồng bộ nhân sự từ Cloud, đồng thời giữ nguyên lịch sử chấm công các tháng khác (nếu có)
+                    let newStaffData = cloudDept.staffData.map(cloudStaff => {
+                        let oldLocalStaff = localDept.staffData.find(s => s.name === cloudStaff.name);
+                        let monthlyDays = oldLocalStaff ? oldLocalStaff.monthlyDays : {};
+                        monthlyDays[monthYearKey] = cloudStaff.days || {};
+
+                        return {
+                            name: cloudStaff.name,
+                            role: cloudStaff.role,
+                            monthlyDays: monthlyDays
+                        };
+                    });
+
+                    localDept.staffData = newStaffData;
                 });
 
-                // Lưu đồng bộ ngược lại vào LocalStorage
+                // Lọc bỏ những bộ phận mặc định (VD: Bộ phận mới) nếu nó trống, để giao diện gọn gàng
+                departments = departments.filter(d => 
+                    data.departments.some(cd => cd.name === d.name) || 
+                    d.staffData.some(s => Object.keys(s.monthlyDays).length > 0)
+                );
+
+                // Chuyển tab đang xem về tab đầu tiên nhận được từ cloud
+                if (departments.length > 0) activeDeptId = departments[0].id;
+
+                // Lưu trạng thái vào máy mới
                 const stateToSave = { activeDeptId: activeDeptId, departments: departments };
                 localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
 
                 // Vẽ lại giao diện
+                renderTabs();
                 renderTable();
-                showToast("Tải dữ liệu thành công", "success", "✓");
+                showToast("Tải đồng bộ thành công", "success", "✓");
             } else {
-                showToast("Không tìm thấy dữ liệu trên Cloud", "warning", "⚠️");
+                showToast("Không có dữ liệu của tháng này trên Cloud", "warning", "⚠️");
             }
         } catch (error) {
             showToast("Lỗi kết nối Cloud!", "error", "❌");
