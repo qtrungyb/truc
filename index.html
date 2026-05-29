@@ -150,10 +150,15 @@
         .btn-excel:hover { background-color: #15803d; }
         
         .table-container { 
-            width: 100%; overflow-x: auto; max-height: calc(100vh - 320px); 
-            border: 1px solid var(--border-strong); border-radius: 4px; background: #ffffff;
-        }
-        
+			width: 100%; 
+			overflow-x: auto; 
+			overflow-y: auto; 
+			max-height: 665px;
+			border: 1px solid var(--border-strong); 
+			border-radius: 4px; 
+			background: #ffffff;
+		}
+				
         table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1120px; font-size: 12.5px; }
         th, td { 
             border-right: 1px solid var(--border-light); 
@@ -373,7 +378,8 @@
 		<div class="tips">
           <span>Click 1 lần để gõ. Click lần 2 để xoay vòng (T ➔ C ➔ LE). Click chuột phải để xóa.</span>
 		</div>
-		<div style="display: flex; align-items: center; width: 100%; justify-content: flex-end;">
+		<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%;">
+            <button onclick="loadFromCloud()" style="background-color: #64748b;">Tải dữ liệu Cloud</button>
             <button onclick="addRow()">+ Thêm nhân sự</button>
         </div>
     </div>
@@ -751,7 +757,58 @@
            console.error(error);
        }
    }
+	async function loadFromCloud() {
+        if (!GOOGLE_SHEET_API_URL || GOOGLE_SHEET_API_URL.includes('XXXXXX')) {
+            showToast("URL Cloud không hợp lệ", "error", "❌");
+            return;
+        }
 
+        let activeDept = departments.find(d => d.id === activeDeptId);
+        if (!activeDept) return;
+
+        showToast("Đang tải dữ liệu từ Cloud...", "info", "🔄");
+
+        try {
+            // Tạo URL với các tham số truy vấn (query parameters)
+            const url = new URL(GOOGLE_SHEET_API_URL);
+            url.searchParams.append("action", "load");
+            url.searchParams.append("month", monthSelect.value);
+            url.searchParams.append("year", yearSelect.value);
+            url.searchParams.append("departmentName", activeDept.name);
+
+            const response = await fetch(url, { method: 'GET' });
+            const data = await response.json();
+
+            if (data && data.staffData) {
+                const monthYearKey = `${monthSelect.value}_${yearSelect.value}`;
+                
+                // Cập nhật dữ liệu từ cloud vào bộ phận hiện tại
+                activeDept.staffData = data.staffData.map(staff => {
+                    let monthlyDays = {};
+                    monthlyDays[monthYearKey] = staff.days || {};
+                    return {
+                        name: staff.name,
+                        role: staff.role,
+                        monthlyDays: monthlyDays
+                    };
+                });
+
+                // Lưu đồng bộ ngược lại vào LocalStorage
+                const stateToSave = { activeDeptId: activeDeptId, departments: departments };
+                localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
+
+                // Vẽ lại giao diện
+                renderTable();
+                showToast("Tải dữ liệu thành công", "success", "✓");
+            } else {
+                showToast("Không tìm thấy dữ liệu trên Cloud", "warning", "⚠️");
+            }
+        } catch (error) {
+            showToast("Lỗi kết nối Cloud!", "error", "❌");
+            console.error(error);
+        }
+    }
+	
     function renderTable() {
         let activeDept = departments.find(d => d.id === activeDeptId);
         if (!activeDept) return;
