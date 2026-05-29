@@ -493,11 +493,17 @@
 
     let departments = [];
     let activeDeptId = null;
-    let saveTimeout = null;
+    let isCloudLoading = false;
 
-    monthSelect.addEventListener('change', loadDataAndRender);
-    yearSelect.addEventListener('change', loadDataAndRender);
-
+	monthSelect.addEventListener('change', () => { 
+        loadDataAndRender(); 
+        loadFromCloud(true);
+    });
+    yearSelect.addEventListener('change', () => { 
+        loadDataAndRender(); 
+        loadFromCloud(true);
+    });
+	
     function getCurrentDataKey() { return `timesheet_depts_${monthSelect.value}_${yearSelect.value}`; }
 
     function getDayOfWeekStr(day, month, year) {
@@ -684,6 +690,7 @@
     }
 
     function triggerAutoSave() {
+	if (isCloudLoading) return;
     let activeDept = departments.find(d => d.id === activeDeptId);
     if (!activeDept) return;
 
@@ -718,7 +725,7 @@
 
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(saveToGoogleSheet, 2000);
-}
+	}
 
     async function saveToGoogleSheet() {
        if (!GOOGLE_SHEET_API_URL || GOOGLE_SHEET_API_URL.includes('XXXXXX')) {
@@ -756,18 +763,21 @@
            showToast("Lỗi đồng bộ Cloud!", "error", "❌");
            console.error(error);
        }
-   }
-	async function loadFromCloud() {
+	}
+	async function loadFromCloud(isAuto = false) {
         if (!GOOGLE_SHEET_API_URL || GOOGLE_SHEET_API_URL.includes('XXXXXX')) {
-            showToast("URL Cloud không hợp lệ", "error", "❌");
+            if (!isAuto) showToast("URL Cloud không hợp lệ", "error", "❌");
             return;
         }
 
-        showToast("Đang quét và tải toàn bộ dữ liệu từ Cloud...", "info", "🔄");
+        if (isCloudLoading) return; // Ngăn việc gọi hàm nhiều lần cùng lúc
+        isCloudLoading = true;
+
+        if (!isAuto) showToast("Đang quét và tải toàn bộ dữ liệu từ Cloud...", "info", "🔄");
 
         try {
             const url = new URL(GOOGLE_SHEET_API_URL);
-            url.searchParams.append("action", "loadAll"); // Đổi action thành loadAll
+            url.searchParams.append("action", "loadAll");
             url.searchParams.append("month", monthSelect.value);
             url.searchParams.append("year", yearSelect.value);
 
@@ -778,7 +788,6 @@
                 const monthYearKey = `${monthSelect.value}_${yearSelect.value}`;
 
                 data.departments.forEach(cloudDept => {
-                    // Tìm xem bộ phận đã tồn tại ở máy này chưa
                     let localDept = departments.find(d => d.name === cloudDept.name);
 
                     if (!localDept) {
@@ -790,7 +799,6 @@
                         departments.push(localDept);
                     }
 
-                    // Đồng bộ nhân sự từ Cloud, đồng thời giữ nguyên lịch sử chấm công các tháng khác (nếu có)
                     let newStaffData = cloudDept.staffData.map(cloudStaff => {
                         let oldLocalStaff = localDept.staffData.find(s => s.name === cloudStaff.name);
                         let monthlyDays = oldLocalStaff ? oldLocalStaff.monthlyDays : {};
@@ -806,29 +814,28 @@
                     localDept.staffData = newStaffData;
                 });
 
-                // Lọc bỏ những bộ phận mặc định (VD: Bộ phận mới) nếu nó trống, để giao diện gọn gàng
                 departments = departments.filter(d => 
                     data.departments.some(cd => cd.name === d.name) || 
                     d.staffData.some(s => Object.keys(s.monthlyDays).length > 0)
                 );
 
-                // Chuyển tab đang xem về tab đầu tiên nhận được từ cloud
                 if (departments.length > 0) activeDeptId = departments[0].id;
 
-                // Lưu trạng thái vào máy mới
                 const stateToSave = { activeDeptId: activeDeptId, departments: departments };
                 localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
 
-                // Vẽ lại giao diện
                 renderTabs();
                 renderTable();
-                showToast("Tải đồng bộ thành công", "success", "✓");
+                
+                if (!isAuto) showToast("Tải đồng bộ thành công", "success", "✓");
             } else {
-                showToast("Không có dữ liệu của tháng này trên Cloud", "warning", "⚠️");
+                if (!isAuto) showToast("Không có dữ liệu của tháng này trên Cloud", "warning", "⚠️");
             }
         } catch (error) {
-            showToast("Lỗi kết nối Cloud!", "error", "❌");
+            if (!isAuto) showToast("Lỗi kết nối Cloud!", "error", "❌");
             console.error(error);
+        } finally {
+            isCloudLoading = false; // Mở khóa sau khi hoàn tất (dù lỗi hay thành công)
         }
     }
 	
@@ -1239,7 +1246,12 @@
     saveAs(blob, `Bang_Cham_Cong_${deptName.replace(/[^a-zA-Z0-9]/g, "_")}_T${month}_${year}.xlsx`);
 }
 
-    loadDataAndRender();
+    window.addEventListener('DOMContentLoaded', () => {
+        loadDataAndRender();
+        setTimeout(() => {
+            loadFromCloud(true);
+        }, 500); 
+    });
 </script>
 </body>
 </html>
