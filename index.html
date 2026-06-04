@@ -50,13 +50,18 @@
         }
         .header-info strong { color: #0f172a; font-size: 14px;}
         
+        /* --- Cải tiến Ô nhập liệu Khoa/Phòng --- */
         input.dept-input {
-            font-size: 13.5px; font-family: inherit; font-weight: 600; border: none;
-            border-bottom: 2px dashed #cbd5e1; background: transparent; color: var(--primary-color);
-            width: 250px; outline: none; transition: all 0.2s; padding: 2px 6px; margin-left: 5px;
+            font-size: 14px; font-family: inherit; font-weight: 700; border: none;
+            border-bottom: 2px solid #e2e8f0; background: transparent; color: var(--primary-color);
+            width: 280px; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            padding: 4px 8px; margin-left: 5px; border-radius: 4px 4px 0 0;
+        }
+        input.dept-input:hover {
+            border-bottom-color: #94a3b8; background-color: #f8fafc;
         }
         input.dept-input:focus {
-            border-bottom: 2px solid var(--primary-color); background-color: #f8fafc; border-radius: 4px 4px 0 0;
+            border-bottom: 2px solid var(--primary-color); background-color: #eff6ff; 
         }
         
         .title-section { text-align: center; margin: 20px 0 24px 0; }
@@ -71,12 +76,21 @@
         .month-year-controls select:hover, .month-year-controls input:hover { background-color: #f8fafc; }
         .month-year-controls input { width: 80px; }
         
-        /* HỆ THỐNG PHÂN TAB */
+        /* ================= HỆ THỐNG PHÂN TAB (CẢI TIẾN) ================= */
+        .tabs-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 8px;
+            position: relative;
+        }
+
         .tabs-container {
-            display: flex; align-items: center; 
-            margin-bottom: 24px; gap: 8px;
-            overflow-x: auto; padding-bottom: 4px;
-            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: flex-end; 
+            gap: 4px; flex: 1;
+            overflow-x: auto; scroll-behavior: smooth;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0;
             scrollbar-width: none; 
             -ms-overflow-style: none; 
         }
@@ -84,25 +98,42 @@
 
         .tab-item {
             display: inline-flex; align-items: center; 
-            padding: 8px 8px 8px 16px; 
+            padding: 10px 12px 10px 16px; 
             background: #f8fafc;
-            border: 1px solid transparent; 
-            border-radius: 6px;
+            border: 2px solid transparent; 
+            border-radius: 8px 8px 0 0; /* Bo tròn góc trên */
             cursor: pointer; font-weight: 500; color: var(--text-muted); 
             transition: all 0.2s ease; 
-            gap: 12px;
-            white-space: nowrap; position: relative;
+            gap: 8px;
+            white-space: nowrap; 
+            margin-bottom: -2px; /* Đè lên viền của container */
+            position: relative;
+            z-index: 1;
         }
-        .tab-item:hover { background: #f1f5f9; color: var(--text-main); }
+        .tab-item:hover { background: #e2e8f0; color: var(--text-main); }
         .tab-item.active {
-            background: #eff6ff;
-            color: var(--primary-color); font-weight: 600;
-            border: 1px solid #bfdbfe;
+            background: #ffffff;
+            color: var(--primary-color); font-weight: 700;
+            border: 2px solid var(--primary-color);
+            border-bottom: 2px solid #ffffff; /* Che viền dưới */
+            z-index: 2;
+        }
+
+        .tab-text { user-select: none; }
+        
+        /* Input khi click đúp để sửa tên */
+        .edit-tab-name {
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: inherit; font-size: inherit; font-weight: 600;
+            color: var(--primary-color);
+            outline: none; width: 120px;
         }
 
         .tab-close {
             color: #94a3b8; background: transparent;
-            border-radius: 4px; width: 22px; height: 22px;
+            border-radius: 50%; width: 20px; height: 20px;
             display: inline-flex; align-items: center; justify-content: center; 
             font-size: 11px; font-weight: bold;
             transition: all 0.15s ease; opacity: 0; 
@@ -111,27 +142,76 @@
         .tab-item:hover .tab-close, .tab-item.active .tab-close { opacity: 1; visibility: visible; }
         .tab-close:hover { background: #fee2e2 !important; color: var(--danger-color) !important; }
 
-        .btn-add-tab {
+        /* Nút cuộn và nút thêm Tab */
+        .tab-action-btn {
             width: 34px; height: 34px; padding: 0; justify-content: center; 
-            background: #f8fafc; color: #64748b; 
-            border: 1px dashed #cbd5e1;
-            border-radius: 6px; font-size: 18px; font-weight: 500;
+            background: #ffffff; color: var(--text-muted); 
+            border: 1px solid var(--border-light);
+            border-radius: 6px; font-size: 16px; font-weight: bold;
             cursor: pointer; display: inline-flex; align-items: center; 
-            transition: all 0.2s ease; margin-left: 4px; flex-shrink: 0; 
+            transition: all 0.2s ease; flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .btn-add-tab:hover { background: #f1f5f9; color: var(--primary-color); border-color: var(--primary-color); }
+        .tab-action-btn:hover { background: #f1f5f9; color: var(--primary-color); border-color: var(--primary-color); }
+        .btn-add-tab { border: 1.5px dashed #94a3b8; background: #f8fafc; color: var(--primary-color); }
         
+		/* ================= CẢI TIẾN TAB: KÉO THẢ ================= */
+        .tab-item[draggable="true"] { cursor: grab; }
+        .tab-item[draggable="true"]:active { cursor: grabbing; }
+        .tab-item.dragging { opacity: 0.5; background: #cbd5e1; }
+        .tab-item.drag-over { box-shadow: inset 4px 0 0 var(--primary-color); }
+        /* ========================================================= */
+		
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: transparent; padding: 8px 4px; border: none; }
         
-        button {
+        .btn-add-staff {
             display: inline-flex; align-items: center; justify-content: center;
-            padding: 8px 16px; background-color: var(--primary-color); color: white; 
-            border: none; cursor: pointer; border-radius: 4px; 
-            font-weight: 600; font-size: 13px; transition: all 0.2s;
+            padding: 8px 16px; background-color: #eff6ff; color: var(--primary-color);
+            border: 1.5px dashed var(--primary-color); cursor: pointer; border-radius: 6px;
+            font-weight: 600; font-size: 13px; transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        button:hover { background-color: var(--primary-hover); }
-        .btn-excel { background-color: var(--success-color); margin-right: 12px; }
-        .btn-excel:hover { background-color: #15803d; }
+        .btn-add-staff svg {
+            margin-right: 6px; transition: transform 0.2s;
+        }
+        .btn-add-staff:hover {
+            background-color: var(--primary-color); color: white;
+            border-style: solid;
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.25);
+            transform: translateY(-1px);
+        }
+        .btn-add-staff:hover svg {
+            transform: rotate(90deg);
+        }
+        .btn-add-staff:active { transform: translateY(0); box-shadow: none; }
+        /* ============================================================= */
+        }
+        button.btn-primary-action:hover { background-color: var(--primary-hover); }
+        .btn-excel { 
+            display: inline-flex; align-items: center; justify-content: center; 
+            padding: 9px 18px; background-color: var(--success-color); color: white; 
+            border: none; cursor: pointer; border-radius: 6px; font-weight: 600; 
+            font-size: 13.5px; transition: all 0.2s ease; 
+            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.15);
+        }
+        .btn-excel:hover { 
+            background-color: #15803d; transform: translateY(-1.5px); 
+            box-shadow: 0 4px 8px rgba(22, 163, 74, 0.3); 
+        }
+        .btn-excel:active { transform: translateY(0); }
+
+        .btn-print { 
+            display: inline-flex; align-items: center; justify-content: center; 
+            padding: 9px 18px; background-color: #475569; color: white; 
+            border: none; cursor: pointer; border-radius: 6px; font-weight: 600; 
+            font-size: 13.5px; transition: all 0.2s ease; 
+            box-shadow: 0 2px 4px rgba(71, 85, 105, 0.15);
+        }
+        .btn-print:hover { 
+            background-color: #334155; transform: translateY(-1.5px); 
+            box-shadow: 0 4px 8px rgba(71, 85, 105, 0.3); 
+        }
+        .btn-print:active { transform: translateY(0); }
         
         .table-container { 
             width: 100%; overflow-x: auto; overflow-y: auto; max-height: 665px;
@@ -176,8 +256,22 @@
         .legend { background: transparent; border: none; padding: 4px 0; font-size: 12.5px; line-height: 1.6; }
         .tips { font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;}
         
-        .btn-delete { background: none; color: #94a3b8; padding: 4px 8px; border: none; cursor: pointer; border-radius: 4px; font-size: 14px; }
-        .btn-delete:hover { color: var(--danger-color); background: #fee2e2; }
+        .btn-delete { 
+            background: transparent; color: #94a3b8; 
+            padding: 6px; border: none; cursor: pointer; 
+            border-radius: 6px; display: inline-flex; 
+            align-items: center; justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .btn-delete svg { 
+            width: 17px; height: 17px; stroke-width: 2; 
+            transition: all 0.2s ease; 
+        }
+        .btn-delete:hover { 
+            color: var(--danger-color); background: #fee2e2; 
+            transform: scale(1.1); /* Phóng to nhẹ khi hover */
+        }
+        .btn-delete:active { transform: scale(0.95); }
 
         /* TOAST NOTIFICATION MINIMALIST */
         .toast-container {
@@ -315,14 +409,25 @@
         </div>
     </div>
 
-    <div id="tabsContainer" class="tabs-container"></div>
+    <div class="tabs-wrapper hide-on-print">
+        <button class="tab-action-btn" onclick="scrollTabs(-200)" title="Cuộn trái">&lt;</button>
+        <div id="tabsContainer" class="tabs-container"></div>
+        <button class="tab-action-btn" onclick="scrollTabs(200)" title="Cuộn phải">&gt;</button>
+        <button class="tab-action-btn btn-add-tab" onclick="addTab()" title="Thêm Khoa/Phòng mới">＋</button>
+    </div>
 
     <div class="controls">
         <div class="tips">
           <span>Click 1 lần để gõ. Click lần 2 để xoay vòng (T ➔ C ➔ LE). Click chuột phải để xóa.</span>
         </div>
         <div style="display: flex; align-items: center; width: 100%; justify-content: flex-end;">
-            <button onclick="addRow()">+ Thêm nhân sự</button>
+            <button class="btn-add-staff" onclick="addRow()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Thêm nhân sự
+            </button>
         </div>
     </div>
 
@@ -344,8 +449,24 @@
     </div> 
 
     <div class="hide-on-print" style="display: flex; justify-content: flex-end; margin-top: 16px; margin-bottom: 8px; gap: 12px;">
-        <button class="btn-print" onclick="prepareAndPrint()" style="background-color: #475569;">In bảng công</button>
-        <button class="btn-excel" onclick="exportToExcel()">Xuất Excel</button>
+        <button class="btn-print" onclick="prepareAndPrint()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            In bảng công
+        </button>
+        <button class="btn-excel" onclick="exportToExcel()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="8" y1="13" x2="16" y2="13"></line>
+                <line x1="8" y1="17" x2="16" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Xuất Excel
+        </button>
     </div>
     
     <div id="printFooter" style="display: none; margin-top: 25px; color: #000;">
@@ -582,17 +703,67 @@
         renderTable();
     }
 
+    function scrollTabs(offset) {
+        document.getElementById('tabsContainer').scrollBy({ left: offset, behavior: 'smooth' });
+    }
+	let draggedDeptIndex = null;
     function renderTabs() {
         tabsContainer.innerHTML = '';
-        departments.forEach(dept => {
+        departments.forEach((dept, index) => {
             const tab = document.createElement('div');
             tab.className = `tab-item ${dept.id === activeDeptId ? 'active' : ''}`;
             tab.dataset.id = dept.id;
-            tab.onclick = () => switchTab(dept.id);
+            tab.dataset.index = index;
+            
+            // Kích hoạt tính năng kéo thả
+            tab.draggable = true; 
+
+            // --- XỬ LÝ SỰ KIỆN KÉO THẢ (DRAG & DROP) ---
+            tab.ondragstart = (e) => {
+                draggedDeptIndex = index;
+                setTimeout(() => tab.classList.add('dragging'), 0);
+            };
+            tab.ondragend = () => {
+                tab.classList.remove('dragging');
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('drag-over'));
+            };
+            tab.ondragover = (e) => {
+                e.preventDefault(); // Cần thiết để cho phép drop
+                const draggingTab = document.querySelector('.dragging');
+                if (draggingTab && draggingTab !== tab) tab.classList.add('drag-over');
+            };
+            tab.ondragleave = () => tab.classList.remove('drag-over');
+            tab.ondrop = (e) => {
+                e.preventDefault();
+                tab.classList.remove('drag-over');
+                if (draggedDeptIndex === null || draggedDeptIndex === index) return;
+
+                // Hoán đổi vị trí trong mảng departments
+                const movedDept = departments.splice(draggedDeptIndex, 1)[0];
+                departments.splice(index, 0, movedDept);
+
+                // Lưu lại thứ tự mới và render
+                const stateToSave = { activeDeptId: activeDeptId, departments: departments };
+                localStorage.setItem('timesheet_global_data_v3', JSON.stringify(stateToSave));
+                triggerAutoSave(true); // Đẩy thứ tự lên Firebase
+                renderTabs();
+            };
+
+            // --- SỰ KIỆN CLICK & DOUBLE CLICK ---
+            tab.onclick = (e) => {
+                if(e.target.tagName !== 'INPUT' && !e.target.classList.contains('tab-close')) {
+                    switchTab(dept.id);
+                }
+            };
             
             const tabText = document.createElement('span');
             tabText.className = 'tab-text';
             tabText.innerText = dept.name || 'Bộ phận mới';
+            tabText.title = "Click đúp để đổi tên";
+            tabText.ondblclick = (e) => {
+                e.stopPropagation();
+                editTabName(dept.id, tabText);
+            };
             
             const closeBtn = document.createElement('span');
             closeBtn.className = 'tab-close';
@@ -604,19 +775,46 @@
             tab.appendChild(closeBtn);
             tabsContainer.appendChild(tab);
 
+            // Tự động cuộn đến tab đang active
             if (dept.id === activeDeptId) {
                 setTimeout(() => {
                     tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }, 50);
             }
         });
+    }
 
-        const btnAdd = document.createElement('button');
-        btnAdd.className = 'btn-add-tab';
-        btnAdd.innerHTML = '+';
-        btnAdd.title = 'Thêm bộ phận mới'; 
-        btnAdd.onclick = addTab;
-        tabsContainer.appendChild(btnAdd);
+    function editTabName(id, spanEl) {
+        const currentName = spanEl.innerText;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'edit-tab-name';
+        input.value = currentName;
+
+        input.onblur = () => saveTabName(id, input.value, currentName);
+        
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') input.blur();
+            if (e.key === 'Escape') saveTabName(id, currentName, currentName); 
+        };
+
+        spanEl.innerHTML = '';
+        spanEl.appendChild(input);
+        input.focus();
+        input.select();
+    }
+
+    function saveTabName(id, newName, oldName) {
+        const finalName = newName.trim() || oldName;
+        const dept = departments.find(d => d.id === id);
+        if (dept) {
+            dept.name = finalName;
+            if (id === activeDeptId) {
+                document.getElementById('departmentName').value = finalName;
+            }
+        }
+        renderTabs();
+        triggerAutoSave();
     }
 
     function switchTab(id) {
@@ -666,7 +864,7 @@
 
     activeDept.name = departmentInput.value;
     const currentTabEl = document.querySelector(`.tab-item[data-id="${activeDeptId}"] .tab-text`);
-    if (currentTabEl) currentTabEl.innerText = departmentInput.value || 'Bộ phận mới';
+    if (currentTabEl && !currentTabEl.querySelector('input')) currentTabEl.innerText = departmentInput.value || 'Bộ phận mới';
 
     const monthYearKey = `${monthSelect.value}_${yearSelect.value}`;
     const rows = tbody.querySelectorAll('tr');
@@ -857,7 +1055,16 @@
                 <td class="summary-col c-val" style="color: var(--text-c);"></td>
                 <td class="summary-col le-val" style="color: var(--text-le);"></td>
                 <td class="summary-col total-val" style="color: var(--danger-color); font-weight:bold;"></td>
-                <td class="w-del"><button class="btn-delete" onclick="deleteRow(${idx})">X</button></td>
+                <td class="w-del">
+                    <button class="btn-delete" onclick="deleteRow(${idx})" title="Xóa nhân sự này">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -975,16 +1182,42 @@
     function addRow() { 
         let activeDept = departments.find(d => d.id === activeDeptId);
         if (!activeDept) return;
+        
         activeDept.staffData.push({name:'', role:'Điều dưỡng', monthlyDays:{}}); 
         renderTable(); 
         triggerAutoSave(); 
+
+        // Tự động cuộn xuống cuối bảng và focus vào ô nhập Tên
+        setTimeout(() => {
+            const tableContainer = document.querySelector('.table-container');
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (rows.length > 0) {
+                const lastRow = rows[rows.length - 1];
+                const nameInput = lastRow.querySelector('.col-name input');
+                
+                // Cuộn khung chứa bảng xuống kịch đáy
+                tableContainer.scrollTop = tableContainer.scrollHeight;
+                
+                // Đặt con trỏ nhấp nháy vào ô Họ Tên
+                if (nameInput) {
+                    nameInput.focus();
+                    nameInput.select();
+                }
+            }
+        }, 50); // Độ trễ nhỏ để đợi DOM (bảng) render xong
     }
     
     function deleteRow(idx) { 
         let activeDept = departments.find(d => d.id === activeDeptId);
         if (!activeDept) return;
-        if(confirm("Xóa nhân sự này?")) { 
-            activeDept.staffData.splice(idx,1); 
+        
+        // Lấy tên nhân sự, nếu để trống thì hiển thị 'nhân sự dòng này'
+        let staffName = activeDept.staffData[idx].name.trim();
+        let targetName = staffName ? `"${staffName}"` : "nhân sự dòng này";
+        
+        if(confirm(`Bạn có chắc chắn muốn xóa ${targetName} khỏi bảng công?`)) { 
+            activeDept.staffData.splice(idx, 1); 
             renderTable(); 
             triggerAutoSave(); 
         } 
